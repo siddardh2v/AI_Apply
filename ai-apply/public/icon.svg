@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0A0E1A"/>
+  <rect x="16" y="16" width="480" height="480" rx="84" fill="none" stroke="#00F5FF" stroke-width="6" opacity="0.5"/>
+  <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle"
+        font-family="monospace" font-size="240" font-weight="700" fill="#00F5FF">J</text>
+  <text x="50%" y="78%" text-anchor="middle" dominant-baseline="middle"
+        font-family="monospace" font-size="58" font-weight="700" fill="#E8EDF5">JOBWARD</text>
+</svg>

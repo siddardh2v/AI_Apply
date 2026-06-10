@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Jobward — Autofill & Save Jobs",
+  "version": "0.1.0",
+  "description": "Autofill job application forms across ATS platforms and save postings straight to Jobward.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["http://localhost:3000/*", "https://*/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.svg",
+    "default_title": "Jobward"
+  },
+  "icons": { "128": "icon.svg" }
+}

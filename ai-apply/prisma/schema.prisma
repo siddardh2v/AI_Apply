@@ -1,0 +1,168 @@
+// Prisma schema for AI Apply.
+// Local dev uses SQLite. For production, switch provider to "postgresql".
+// NOTE: SQLite has no native JSON type, so structured fields (parsedContent,
+// analysis) are stored as JSON strings and parsed at the API boundary.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String   @unique
+  /// The in-app inbox address assigned to this user (e.g. jane.ab12@apply.domain).
+  appEmail     String?  @unique
+  passwordHash String?
+  image        String?
+  /// OAuth provider id, e.g. "google", once social login is wired.
+  oauthProvider String?
+  oauthId       String?
+  createdAt    DateTime @default(now())
+
+  resumes       Resume[]
+  applications  Application[]
+  savedSearches SavedSearch[]
+  emails        EmailMessage[]
+}
+
+// ---------------------------------------------------------------------------
+// Resumes
+// ---------------------------------------------------------------------------
+
+model Resume {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  /// "paste" or "upload"
+  source        String   @default("paste")
+  fileName      String?
+  originalText  String
+  /// JSON string: { skills, work_experience, education, certifications, summary }
+  parsedContent String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  applications Application[]
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Job postings (shared across users; deduped by source + externalId)
+// ---------------------------------------------------------------------------
+
+model JobPosting {
+  id             String    @id @default(cuid())
+  /// "manual" | "remotive" | "arbeitnow" | "greenhouse" | "lever" | "adzuna"
+  source         String    @default("manual")
+  /// Stable id from the source, used for dedupe. Null for manual entries.
+  externalId     String?
+  title          String
+  company        String
+  location       String?
+  remote         Boolean   @default(false)
+  employmentType String?
+  url            String?
+  description    String
+  salaryMin      Int?
+  salaryMax      Int?
+  postedDate     DateTime?
+  /// JSON string: { required_skills, nice_to_have, experience_years, education, key_responsibilities }
+  analysis       String?
+  createdAt      DateTime  @default(now())
+
+  applications Application[]
+
+  @@unique([source, externalId])
+  @@index([source])
+}
+
+// ---------------------------------------------------------------------------
+// Applications
+// ---------------------------------------------------------------------------
+
+model Application {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job            JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId          String
+  resume         Resume?    @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  resumeId       String?
+  /// Unique token used to build this application's reply address
+  /// (<replyToken>@apply.domain) so recruiter replies thread back here.
+  replyToken     String?    @unique
+  /// saved | tailoring | ready | applied | interviewing | offer | rejected
+  status         String     @default("saved")
+  matchScore     Int?
+  tailoredResume String?
+  coverLetter    String?
+  notes          String?
+  appliedDate    DateTime?
+  responseDate   DateTime?
+  nextFollowUpAt DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  emails EmailMessage[]
+
+  @@unique([userId, jobId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Saved searches (job-discovery preferences)
+// ---------------------------------------------------------------------------
+
+model SavedSearch {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  query      String?
+  location   String?
+  remoteOnly Boolean  @default(false)
+  /// Comma-separated list of sources to include.
+  sources    String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// In-app email
+// ---------------------------------------------------------------------------
+
+model EmailMessage {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId String?
+  /// "outbound" | "inbound"
+  direction     String       @default("outbound")
+  toAddress     String?
+  fromAddress   String?
+  subject       String
+  body          String
+  /// draft | sent | failed | received
+  status        String       @default("draft")
+  providerId    String?
+  sentAt        DateTime?
+  createdAt     DateTime     @default(now())
+
+  @@index([userId])
+  @@index([applicationId])
+}

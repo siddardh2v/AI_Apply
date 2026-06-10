@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <span class="logo">Job<span class="accent">ward</span></span>
+    </header>
+
+    <div class="actions">
+      <button id="autofill" class="btn primary">⚡ Autofill this page</button>
+      <button id="save" class="btn ghost">＋ Save job to Jobward</button>
+    </div>
+    <p id="status" class="status"></p>
+
+    <details>
+      <summary>Your profile</summary>
+      <div class="grid">
+        <label>First name<input id="firstName" /></label>
+        <label>Last name<input id="lastName" /></label>
+        <label>Email<input id="email" type="email" /></label>
+        <label>Phone<input id="phone" /></label>
+        <label>Location<input id="location" /></label>
+        <label>LinkedIn<input id="linkedin" /></label>
+        <label>Website<input id="website" /></label>
+      </div>
+      <label class="full">Jobward URL
+        <input id="jobwardUrl" placeholder="http://localhost:3000" />
+      </label>
+      <button id="saveProfile" class="btn ghost small">Save profile</button>
+    </details>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
